@@ -9,6 +9,11 @@ To run the project
 mvn jetty:run
 ```
 
+To access the project
+```
+http://localhost:8080/hello-world-cas/diagnostic.html
+```
+
 To access the CAS
 ```
 http://localhost:8080/cas
