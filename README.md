@@ -19,7 +19,7 @@ To access the CAS
 http://localhost:8080/cas
 ```
 
-To login, enter any of the same netId and password.
+To login, ## enter any of the same netId and password.
 ```
 netId: admin
 password: admin   
