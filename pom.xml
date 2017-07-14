@@ -1,0 +1,121 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>my.com.myriadeas</groupId>
+	<artifactId>hello-world-cas</artifactId>
+	<packaging>war</packaging>
+	<version>1.0-SNAPSHOT</version>
+	<name>hello-world Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<org.springframework.version>3.1.2.RELEASE</org.springframework.version>
+		<org.springframework.security.version>3.0.8.RELEASE</org.springframework.security.version>
+		<jetty.version>6.1.22</jetty.version>
+	</properties>
+
+
+	<dependencies>		
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-cas-client</artifactId>
+			<version>${org.springframework.security.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+	<build>
+		<finalName>hello-world-cas</finalName>
+		<plugins>
+			<plugin>
+				<!--This plugin allows to run the example using mvn jetty:run -->
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>maven-jetty-plugin</artifactId>
+				<version>${jetty.version}</version>
+				<configuration>
+					<scanIntervalSeconds>10</scanIntervalSeconds>
+					<connectors>
+						<connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+							<port>8080</port>
+						</connector>
+						<connector implementation="org.mortbay.jetty.security.SslSelectChannelConnector">
+							<port>8443</port>
+							<name>instance_ssl</name>
+							<keystore>${project.build.directory}/jetty-ssl.jks</keystore>
+							<keyPassword>jetty6</keyPassword>
+							<password>jetty6</password>
+						</connector>
+					</connectors>
+					<contextHandlers>
+						<contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+							<war>${settings.localRepository}/org/jasig/cas/cas-server-webapp/3.4.10/cas-server-webapp-3.4.10.war</war>
+							<contextPath>/cas</contextPath>
+						</contextHandler>
+					</contextHandlers>
+					<systemProperties>
+						<systemProperty>
+							<name>javax.net.ssl.trustStore</name>
+							<value>${project.build.directory}/jetty-ssl.jks</value>
+						</systemProperty>
+						<systemProperty>
+							<name>javax.net.ssl.trustStorePassword</name>
+							<value>jetty6</value>
+						</systemProperty>
+					</systemProperties>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.mortbay.jetty</groupId>
+						<artifactId>jetty-sslengine</artifactId>
+						<version>${jetty.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			
+			<!-- This plugin is to show "This connection is untrusted" -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>keytool-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>generate-resources</phase>
+						<id>clean</id>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+					<execution>
+						<phase>generate-resources</phase>
+						<id>genkey</id>
+						<goals>
+							<goal>genkey</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<keystore>${project.build.directory}/jetty-ssl.jks</keystore>
+					<dname>cn=localhost</dname>
+					<keypass>jetty6</keypass>
+					<storepass>jetty6</storepass>
+					<alias>jetty6</alias>
+					<keyalg>RSA</keyalg>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

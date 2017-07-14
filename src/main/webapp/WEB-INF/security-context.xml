@@ -1,0 +1,97 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                    http://www.springframework.org/schema/security 
+                    http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+<!--
+    <http use-expressions="true">
+    	<intercept-url pattern="/index.html" access="isAuthenticated()" />
+		<intercept-url pattern="/css/**" filters="none" />
+		<intercept-url pattern="/images/**" filters="none" />
+		<intercept-url pattern="/js/**" filters="none" />
+        <intercept-url pattern="/**" access="denyAll" />
+        <form-login />
+    </http>
+
+    <authentication-manager>
+        <authentication-provider>
+            <user-service>
+                <user name="rod" password="koala" authorities="supervisor, teller, user" />
+                <user name="dianne" password="emu" authorities="teller, user" />
+                <user name="scott" password="wombat" authorities="user" />
+                <user name="peter" password="opal" authorities="user" />
+            </user-service>
+        </authentication-provider>
+    </authentication-manager>
+-->
+	<http pattern="/css/**" security="none" />
+	<http pattern="/images/**" security="none" />
+	<http pattern="/js/**" security="none" />
+
+	<!--
+		Enable security, let the casAuthenticationEntryPoint handle all intercepted urls.
+		The CAS_FILTER needs to be in the right position within the filter chain.
+	-->
+	<http entry-point-ref="casAuthenticationEntryPoint" auto-config="true">
+		<intercept-url pattern="/**" access="ROLE_USER"></intercept-url>
+	    <custom-filter position="CAS_FILTER" ref="casAuthenticationFilter"></custom-filter>
+	</http>
+
+	<!--
+		Required for the casProcessingFilter, so define it explicitly set and
+		specify an Id Even though the authenticationManager is created by
+		default when namespace based config is used.
+	-->
+	<authentication-manager alias="authenticationManager">
+		<authentication-provider ref="casAuthenticationProvider"></authentication-provider>
+	</authentication-manager>
+
+	<!--
+		This section is used to configure CAS. The service is the
+		actual redirect that will be triggered after the CAS login sequence.
+	-->
+	<beans:bean id="serviceProperties" class="org.springframework.security.cas.ServiceProperties">
+		<beans:property name="service" value="http://localhost:8080/hello-world-cas/j_spring_cas_security_check"></beans:property>
+		<beans:property name="sendRenew" value="false"></beans:property>
+	</beans:bean>	
+
+        <!--
+		The CAS filter handles the redirect from the CAS server and starts the ticket validation.
+	-->
+	<beans:bean id="casAuthenticationFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">
+		<beans:property name="authenticationManager" ref="authenticationManager"></beans:property>
+	</beans:bean>
+
+	<!--
+		The entryPoint intercepts all the CAS authentication requests.
+		It redirects to the CAS loginUrl for the CAS login page.
+	-->
+	<beans:bean id="casAuthenticationEntryPoint" class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
+		<beans:property name="loginUrl" value="https://localhost:8443/cas/login"></beans:property>
+		<beans:property name="serviceProperties" ref="serviceProperties"></beans:property>
+	</beans:bean>
+
+	<!--
+		Handles the CAS ticket processing.
+	 -->
+	<beans:bean id="casAuthenticationProvider" class="org.springframework.security.cas.authentication.CasAuthenticationProvider">
+		<beans:property name="userDetailsService" ref="userService"></beans:property>
+		<beans:property name="serviceProperties" ref="serviceProperties"></beans:property>
+		<beans:property name="ticketValidator">
+			<beans:bean class="org.jasig.cas.client.validation.Cas20ServiceTicketValidator">
+				<beans:constructor-arg index="0" value="https://localhost:8443/cas"></beans:constructor-arg>
+			</beans:bean>
+		</beans:property>
+		<beans:property name="key" value="cas"></beans:property>
+	</beans:bean>
+
+	<!--
+		The users available for this application.
+	-->
+	<user-service id="userService">
+		<user name="admin" password="admin" authorities="ROLE_GUEST,ROLE_USER"></user>
+		<user name="abc" authorities="ROLE_USER"></user>
+	</user-service>
+</beans:beans>
