@@ -19,7 +19,9 @@ To access the CAS
 http://localhost:8080/cas
 ```
 
-To login, enter any of the same netId and password.
+To login, only the 'admin' and 'abc' are authorized to access the disgnostic page. 
+The user that carry other same netId and password are able to pass through the CAS authentication, but will not be granted any authority to access the diagnostic page. 
+Refer to "src\main\webapp\WEB-INF\security-context.xml" under "userService" bean to add more authorized users. 
 ```
 netId: admin
 password: admin   
